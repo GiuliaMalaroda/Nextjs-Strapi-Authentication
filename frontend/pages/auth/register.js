@@ -91,7 +91,7 @@ const Register = () => {
                 <>
                     <br />
                     <small>
-                        If you haven't received our email, <button onClick={() => resendEmail(email)}>click here</button> to resend it.
+                        If you haven&apos;t received our email, <button onClick={() => resendEmail(email)}>click here</button> to resend it.
                     </small>
                 </>
             )}
