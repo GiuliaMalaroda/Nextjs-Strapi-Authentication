@@ -67,7 +67,7 @@ const Register = () => {
         const values = { email: email };
 
         axios
-            .post(`http://localhost:1337/auth/send-email-confirmation`, values)
+            .post('/auth/send-email-confirmation', values)
             .then(response => {
                 const message = `We sent you another email to <u>${values.email}</u> to confirm your account. Please check also your spam folder.`;
                 setAlert(['success', message]);

@@ -2,36 +2,27 @@ import { useState } from 'react';
 import axios from '../../lib/axios';
 import * as Yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
 
-const Login = () => {
-    const { push } = useRouter();
+const ForgotPassword = () => {
     const [alert,setAlert] = useState();
 
     const initialValues = {
-        identifier: "",
-        password: ""
+        email: ""
     }
 
     const validationSchema = Yup.object({
-        identifier: Yup.string().required("Required"),
-        password: Yup.string().required("Required")
+        email: Yup.string().email("Insert a valid email").required("Required")
     });
 
     const onSubmit = (values, { setSubmitting, resetForm }) => {
         setAlert();
 
         axios
-            .post('/auth/local', values)
+            .post('/auth/forgot-password', values)
             .then(response => {
-                const jwt = response.data.jwt;
-                const username = response.data.user.username;
+                const message = `Please check your email to reset your password.`;
+                setAlert(['success', message]);
 
-                localStorage.setItem('jwt', jwt);
-                localStorage.setItem('username', username);
-
-                push('/');
                 resetForm();
             })
             .catch(error => {
@@ -61,10 +52,10 @@ const Login = () => {
 
     return (
         <>
-            <h1>Login</h1>
+            <h1>Forgot password</h1>
             <hr />
             {alert && (
-                <div style={{ backgroundColor: "lightcoral" }}>
+                <div style={{ backgroundColor: alert[0] === "success" ? "lightgreen" : "lightcoral" }}>
                     <div dangerouslySetInnerHTML={{ __html: alert[1] }} />
                 </div>
             )}
@@ -76,22 +67,9 @@ const Login = () => {
                 { ({ isSubmitting, isValid }) => (
                     <Form>
                         <div>
-                            <div><label htmlFor="identifier">Username or Email</label></div>
-                            <Field type="text" id="identifier" name="identifier" placeholder="Username or Email" />
-                            <div className="error"><ErrorMessage name="identifier" /></div>
-                        </div>
-
-                        <br />
-
-                        <div>
-                            <div><label htmlFor="password">Password</label></div>
-                            <Field type="password" id="password" name="password" placeholder="Password" />
-                            <div className="error"><ErrorMessage name="password" /></div>
-                            <small>
-                                <Link href="/auth/forgot-password">
-                                    <a>Forgot password?</a>
-                                </Link>
-                            </small>
+                            <div><label htmlFor="email">Email</label></div>
+                            <Field type="email" id="email" name="email" placeholder="Email" />
+                            <div className="error"><ErrorMessage name="email" /></div>
                         </div>
 
                         <br />
@@ -99,7 +77,7 @@ const Login = () => {
                         <button 
                             type="submit"
                             disabled={!isValid} >
-                            {!isSubmitting && "Login"}
+                            {!isSubmitting && "Send link"}
                             {isSubmitting && "Loading..."}
                         </button>
                     </Form>
@@ -109,4 +87,4 @@ const Login = () => {
     )
 }
 
-export default Login;
+export default ForgotPassword;

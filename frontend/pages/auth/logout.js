@@ -10,8 +10,6 @@ const Logout = () => {
         push('/');
     }, [push]);
 
-    // push('/');
-
     return <></>;
 }
 

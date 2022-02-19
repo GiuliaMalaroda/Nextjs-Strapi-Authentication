@@ -3,36 +3,35 @@ import axios from '../../lib/axios';
 import * as Yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 
-const Login = () => {
-    const { push } = useRouter();
+const ResetPassword = () => {
+    const { push, query } = useRouter();
     const [alert,setAlert] = useState();
 
     const initialValues = {
-        identifier: "",
-        password: ""
+        password: "",
+        passwordConfirmation: "",
     }
 
     const validationSchema = Yup.object({
-        identifier: Yup.string().required("Required"),
-        password: Yup.string().required("Required")
+        password: Yup.string().required("Required"),
+        passwordConfirmation: Yup.string().oneOf([Yup.ref("password"), null], "Passwords must match").required("Required"),
     });
 
     const onSubmit = (values, { setSubmitting, resetForm }) => {
         setAlert();
 
+        values.code = query.code;
+
         axios
-            .post('/auth/local', values)
+            .post('auth/reset-password', values)
             .then(response => {
-                const jwt = response.data.jwt;
-                const username = response.data.user.username;
+                const message = `Your password has been resetted. In a few second you'll be redirected to login page.`;
+                setAlert(['success', message]);
 
-                localStorage.setItem('jwt', jwt);
-                localStorage.setItem('username', username);
-
-                push('/');
                 resetForm();
+                
+                setTimeout(() => { push('/auth/login') }, 5000);
             })
             .catch(error => {
                 if ( !error.response.data.message ) {
@@ -56,15 +55,15 @@ const Login = () => {
             })
             .finally(() => {
                 setSubmitting(false);
-            });
+            }); 
     }
 
     return (
         <>
-            <h1>Login</h1>
+            <h1>Reset password</h1>
             <hr />
             {alert && (
-                <div style={{ backgroundColor: "lightcoral" }}>
+                <div style={{ backgroundColor: alert[0] === "success" ? "lightgreen" : "lightcoral" }}>
                     <div dangerouslySetInnerHTML={{ __html: alert[1] }} />
                 </div>
             )}
@@ -76,22 +75,17 @@ const Login = () => {
                 { ({ isSubmitting, isValid }) => (
                     <Form>
                         <div>
-                            <div><label htmlFor="identifier">Username or Email</label></div>
-                            <Field type="text" id="identifier" name="identifier" placeholder="Username or Email" />
-                            <div className="error"><ErrorMessage name="identifier" /></div>
+                            <div><label htmlFor="password">Password</label></div>
+                            <Field type="password" id="password" name="password" placeholder="Password" />
+                            <div className="error"><ErrorMessage name="password" /></div>
                         </div>
 
                         <br />
 
                         <div>
-                            <div><label htmlFor="password">Password</label></div>
-                            <Field type="password" id="password" name="password" placeholder="Password" />
-                            <div className="error"><ErrorMessage name="password" /></div>
-                            <small>
-                                <Link href="/auth/forgot-password">
-                                    <a>Forgot password?</a>
-                                </Link>
-                            </small>
+                            <div><label htmlFor="passwordConfirmation">Repeat Password</label></div>
+                            <Field type="password" id="passwordConfirmation" name="passwordConfirmation" placeholder="Repeat password" />
+                            <div className="error"><ErrorMessage name="passwordConfirmation" /></div>
                         </div>
 
                         <br />
@@ -99,7 +93,7 @@ const Login = () => {
                         <button 
                             type="submit"
                             disabled={!isValid} >
-                            {!isSubmitting && "Login"}
+                            {!isSubmitting && "Reset password"}
                             {isSubmitting && "Loading..."}
                         </button>
                     </Form>
@@ -109,4 +103,4 @@ const Login = () => {
     )
 }
 
-export default Login;
+export default ResetPassword;
